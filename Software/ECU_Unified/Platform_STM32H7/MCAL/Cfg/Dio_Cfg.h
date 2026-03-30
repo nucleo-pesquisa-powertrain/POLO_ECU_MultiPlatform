@@ -137,14 +137,16 @@ static const Dio_PinConfigType Dio_PinMap[DIO_NUM_CHANNELS] =
      * Nivel ativo: HIGH (anodo conectado ao pino via resistor).
      * TODO: LEDs podem ser realocados para qualquer GPIO disponivel.
      * ---------------------------------------------------------------- */
-    /* [DIO_CH_LED1    = 29] */ { GPIOG, GPIO_PIN_0  },
-    /* [DIO_CH_LED2    = 30] */ { GPIOG, GPIO_PIN_1  },
-    /* [DIO_CH_LED3    = 31] */ { GPIOG, GPIO_PIN_2  },
-    /* [DIO_CH_LED4    = 32] */ { GPIOG, GPIO_PIN_3  },
-    /* [DIO_CH_LED_HIGH= 33] */ { GPIOG, GPIO_PIN_4  },
-    /* [DIO_CH_LED_MID = 34] */ { GPIOG, GPIO_PIN_5  },
-    /* [DIO_CH_LED_LOW = 35] */ { GPIOG, GPIO_PIN_6  },
-    /* [DIO_CH_LED_GND = 36] */ { GPIOG, GPIO_PIN_7  },
+    /* LEDs de ignição -> DO_LED4 (PD12) */
+    /* [DIO_CH_LED1    = 29] */ { GPIOD, GPIO_PIN_12 },  /* Bobina 1/4 -> DO_LED4 */
+    /* [DIO_CH_LED2    = 30] */ { GPIOD, GPIO_PIN_12 },  /* Bobina 2/3 -> DO_LED4 */
+    /* [DIO_CH_LED3    = 31] */ { GPIOD, GPIO_PIN_12 },  /* (reserva)  -> DO_LED4 */
+    /* [DIO_CH_LED4    = 32] */ { GPIOD, GPIO_PIN_12 },  /* (reserva)  -> DO_LED4 */
+    /* LEDs de injeção -> DO_LED1 (PA0) */
+    /* [DIO_CH_LED_HIGH= 33] */ { GPIOA, GPIO_PIN_0  },  /* Injetor 3  -> DO_LED1 */
+    /* [DIO_CH_LED_MID = 34] */ { GPIOA, GPIO_PIN_0  },  /* Injetor 2  -> DO_LED1 */
+    /* [DIO_CH_LED_LOW = 35] */ { GPIOA, GPIO_PIN_0  },  /* Injetor 1  -> DO_LED1 */
+    /* [DIO_CH_LED_GND = 36] */ { GPIOA, GPIO_PIN_0  },  /* Injetor 4  -> DO_LED1 */
 };
 
 /* ------------------------------------------------------------------ */
