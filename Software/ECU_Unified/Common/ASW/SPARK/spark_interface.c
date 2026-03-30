@@ -18,12 +18,10 @@
 #include "ECU_State_interface.h"
 #include <stdbool.h>
 
-/* Inclusao MCAL para log via UART (substitui ASCLIN_UART.h + IfxAsclin_Asc_write) */
-#include "Uart.h"
-#include <stdio.h>
-#include <string.h>
-
-#define SAVE_LOG
+/* SAVE_LOG desabilitado - UART nao disponivel na camada MCAL unificada.
+ * Para reabilitar, criar Uart.h no MCAL e implementar por plataforma. */
+/* #include "Uart.h" */
+/* #define SAVE_LOG */
 
 void Control_ml_ign(void);
 

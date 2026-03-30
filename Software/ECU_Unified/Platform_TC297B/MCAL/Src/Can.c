@@ -34,7 +34,7 @@
 
 /* iLLD - MultiCAN */
 #include "IfxMultican_Can.h"
-#include "IfxMultican_reg.h"
+#include "IfxMultican.h"
 
 /* ------------------------------------------------------------------ */
 /* Indices dos message objects                                         */
@@ -117,7 +117,7 @@ void Can_Init(const Can_ConfigType* config)
     msgObjConfig.acceptanceMask     = 0x7FFu;                         /* Mascara exata (11-bit) */
     msgObjConfig.frame              = IfxMultican_Frame_receive;
     msgObjConfig.msgObjCount        = 1u;
-    msgObjConfig.dataLengthCode     = IfxMultican_DataLengthCode_8;
+    msgObjConfig.control.messageLen = IfxMultican_DataLengthCode_8;
     IfxMultican_Can_MsgObj_init(&Can_MsgObjRx, &msgObjConfig);
 
     /* --- Configuracao do Message Object de TX (MO1) --- */
@@ -127,7 +127,7 @@ void Can_Init(const Can_ConfigType* config)
     msgObjConfig.acceptanceMask     = 0x7FFu;
     msgObjConfig.frame              = IfxMultican_Frame_transmit;
     msgObjConfig.msgObjCount        = 1u;
-    msgObjConfig.dataLengthCode     = IfxMultican_DataLengthCode_8;
+    msgObjConfig.control.messageLen = IfxMultican_DataLengthCode_8;
     IfxMultican_Can_MsgObj_init(&Can_MsgObjTx, &msgObjConfig);
 
     Can_Initialized = TRUE;
@@ -217,15 +217,9 @@ Std_ReturnType Can_Read(uint32* id, uint8* data)
         return E_NOT_OK;
     }
 
-    /* Verifica se ha novo dado no MO de RX */
-    if (IfxMultican_Can_MsgObj_isNewDataAvailable(&Can_MsgObjRx) == FALSE)
-    {
-        return E_NOT_OK;
-    }
-
-    /* Le e limpa o flag de novo dado */
+    /* Le o MO de RX - retorna IfxMultican_Status_newData se ha dado novo */
     if (IfxMultican_Can_MsgObj_readMessage(&Can_MsgObjRx, &rxMsg)
-        != IfxMultican_Status_ok)
+        != IfxMultican_Status_newData)
     {
         return E_NOT_OK;
     }

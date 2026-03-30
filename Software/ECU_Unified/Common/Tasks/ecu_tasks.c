@@ -51,9 +51,9 @@
 /* Task0 gerada pelo ASCET (logica de aplicacao 10 ms) */
 extern void Task0_Run(void);
 
-/* Variaveis de debug exportadas pelo modulo CAN/XCP */
-extern volatile uint32 dbg_CAN_Status;
-extern volatile uint32 dbg_CAN_TxErrCnt;
+/* Variaveis de debug CAN - definidas aqui pois xcp_can_if unificado nao as tem */
+volatile uint32 dbg_CAN_Status    = 0u;
+volatile uint32 dbg_CAN_TxErrCnt  = 0u;
 
 /* ================================================================== */
 /* Variaveis de debug para XCP/INCA (visibilidade global intencional)  */

@@ -35,6 +35,7 @@
 #include "IfxStm.h"
 #include "IfxPort.h"
 #include "Bsp.h"
+#include "hal_discrete_common.h"  /* LED_HIGH, LED_1, etc. para animacao de startup */
 
 /* ------------------------------------------------------------------ */
 /* Display TFT (especifico TC297B, opcional)                           */

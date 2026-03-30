@@ -4,7 +4,7 @@
  *
  * Implementa o controle do driver MC33186 para a borboleta eletronica.
  * A direcao de movimento e' controlada pela saida digital DIO_CH_MC33186_IN1
- * e a intensidade pelo canal PWM_CH_TBI via MCAL Pwm_SetDutyCycle().
+ * e a intensidade pelo canal PWM_CH_THROTTLE via MCAL Pwm_SetDutyCycle().
  *
  * Dependencias iLLD/HAL removidas:
  *   - hal_discrete_outputs.h  (substituido por Dio.h)
@@ -17,7 +17,7 @@
  *   DIO_CH_MC33186_DI1  -> selecao de direcao do motor
  *   DIO_CH_MC33186_DI2  -> controle complementar de direcao
  *   DIO_CH_MC33186_IN1  -> selecao de sentido de rotacao
- *   PWM_CH_TBI          -> canal PWM para controle de posicao
+ *   PWM_CH_THROTTLE          -> canal PWM para controle de posicao
  *
  * Escala do PWM:
  *   Pwm_SetDutyCycle() recebe percentual inteiro (0..100).
@@ -47,7 +47,7 @@ void CDD_TBI_Init(void)
     Dio_WriteChannel(DIO_CH_MC33186_DI2, DIO_HIGH);
 
     /* Inicializa com duty cycle neutro de 50% */
-    Pwm_SetDutyCycle(PWM_CH_TBI, 50u);
+    Pwm_SetDutyCycle(PWM_CH_THROTTLE, 50u);
 }
 
 void CDD_TBI_SetPWM(int pwmvalue)
@@ -71,19 +71,19 @@ void CDD_TBI_SetPWM(int pwmvalue)
         /* Movimento negativo (fecha borboleta): DI1=LOW, duty = |pwmvalue|/10 % */
         pwmvalue *= -1;
         Dio_WriteChannel(DIO_CH_MC33186_IN1, DIO_LOW);
-        Pwm_SetDutyCycle(PWM_CH_TBI, (unsigned int)(pwmvalue / 10));
+        Pwm_SetDutyCycle(PWM_CH_THROTTLE, (unsigned int)(pwmvalue / 10));
     }
     else if (pwmvalue > 0)
     {
         /* Movimento positivo (abre borboleta): DI1=HIGH, duty = (1000-pwmvalue)/10 % */
         pwmvalue = (1000 - pwmvalue);
         Dio_WriteChannel(DIO_CH_MC33186_IN1, DIO_HIGH);
-        Pwm_SetDutyCycle(PWM_CH_TBI, (unsigned int)(pwmvalue / 10));
+        Pwm_SetDutyCycle(PWM_CH_THROTTLE, (unsigned int)(pwmvalue / 10));
     }
     else
     {
         /* Zero: sem movimento, duty minimo de 1% para manter driver ativo */
         Dio_WriteChannel(DIO_CH_MC33186_IN1, DIO_LOW);
-        Pwm_SetDutyCycle(PWM_CH_TBI, 1u);
+        Pwm_SetDutyCycle(PWM_CH_THROTTLE, 1u);
     }
 }
