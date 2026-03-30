@@ -56,8 +56,9 @@ void EcuTask_Init(void);
 /**
  * \brief Tarefa ciclica de 5 ms.
  *
- * Uso atual: toggle de variavel de debug para XCP/INCA.
- * LD4 desabilitado temporariamente para debug CAN.
+ * Uso atual:
+ *   - Toggle de variavel de debug para XCP/INCA
+ *   - LED4 espelha estado do sensor de fase (camshaft)
  */
 void EcuTask_5ms(void);
 
@@ -86,7 +87,7 @@ void EcuTask_20ms(void);
  *
  * Executa:
  *   - Toggle de variavel de debug
- *   - Exibe status do CAN nos LEDs de debug (DIO_CH_LED1..4)
+ *   - Animacao dos LEDs quando motor parado (bounce / pares alternados)
  *
  * \note ECU_Pages_Update() (display TFT) e' especifico do TC297B.
  *       Chamado via funcao fraca (weak) definida na plataforma.

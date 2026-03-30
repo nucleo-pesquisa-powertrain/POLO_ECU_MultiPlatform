@@ -176,7 +176,7 @@ void Icu_Init(void)
      * TODO: Ajustar Pull conforme tipo de sensor de crankshaft. */
     GPIO_InitTypeDef gpioInit = {0};
     gpioInit.Pin  = ICU_CRANK_GPIO_PIN;
-    gpioInit.Mode = GPIO_MODE_IT_RISING;  /* Borda de subida (dente da roda) */
+    gpioInit.Mode = GPIO_MODE_IT_FALLING; /* Borda de descida (compativel com TC297B ERU) */
     gpioInit.Pull = GPIO_NOPULL;          /* TODO: Ajustar conforme circuito */
     HAL_GPIO_Init(ICU_CRANK_GPIO_PORT, &gpioInit);
 

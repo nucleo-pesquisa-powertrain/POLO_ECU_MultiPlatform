@@ -51,10 +51,6 @@
 /* Task0 gerada pelo ASCET (logica de aplicacao 10 ms) */
 extern void Task0_Run(void);
 
-/* Variaveis de debug CAN - definidas aqui pois xcp_can_if unificado nao as tem */
-volatile uint32 dbg_CAN_Status    = 0u;
-volatile uint32 dbg_CAN_TxErrCnt  = 0u;
-
 /* ================================================================== */
 /* Variaveis de debug para XCP/INCA (visibilidade global intencional)  */
 /* ================================================================== */
@@ -92,6 +88,70 @@ unsigned long tps_filtered_value = 0UL;
 
 /** Ultima leitura bruta do ADC do TPS (mV) - para debug */
 static uint32 tps_raw_mv = 0u;
+
+/* ================================================================== */
+/* Animacoes de LED (non-blocking, chamadas a cada 100 ms)             */
+/* ================================================================== */
+
+/** Bounce/Knight Rider: 1->2->3->4->3->2 (chave OFF, sem rotacao) */
+static void Anim_Bounce_Step(void)
+{
+    static uint8 step = 0u;
+
+    /* Apaga todos */
+    Dio_WriteChannel(DIO_CH_LED_HIGH, DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED_MID,  DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED_LOW,  DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED_GND,  DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED1, DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED2, DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED3, DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED4, DIO_LOW);
+
+    switch (step)
+    {
+        case 0u: Dio_WriteChannel(DIO_CH_LED_HIGH, DIO_HIGH); Dio_WriteChannel(DIO_CH_LED1, DIO_HIGH); break;
+        case 1u: Dio_WriteChannel(DIO_CH_LED_MID,  DIO_HIGH); Dio_WriteChannel(DIO_CH_LED2, DIO_HIGH); break;
+        case 2u: Dio_WriteChannel(DIO_CH_LED_LOW,  DIO_HIGH); Dio_WriteChannel(DIO_CH_LED3, DIO_HIGH); break;
+        case 3u: Dio_WriteChannel(DIO_CH_LED_GND,  DIO_HIGH); Dio_WriteChannel(DIO_CH_LED4, DIO_HIGH); break;
+        case 4u: Dio_WriteChannel(DIO_CH_LED_LOW,  DIO_HIGH); Dio_WriteChannel(DIO_CH_LED3, DIO_HIGH); break;
+        case 5u: Dio_WriteChannel(DIO_CH_LED_MID,  DIO_HIGH); Dio_WriteChannel(DIO_CH_LED2, DIO_HIGH); break;
+        default: step = 0u; return;
+    }
+    step = (step + 1u >= 6u) ? 0u : step + 1u;
+}
+
+/** Pares alternados: 1+3 <-> 2+4 (chave ON, sem rotacao) */
+static void Anim_AlternatePairs_Step(void)
+{
+    static uint8 toggle = 0u;
+
+    /* Apaga todos */
+    Dio_WriteChannel(DIO_CH_LED_HIGH, DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED_MID,  DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED_LOW,  DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED_GND,  DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED1, DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED2, DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED3, DIO_LOW);
+    Dio_WriteChannel(DIO_CH_LED4, DIO_LOW);
+
+    if (toggle != 0u)
+    {
+        Dio_WriteChannel(DIO_CH_LED_HIGH, DIO_HIGH);
+        Dio_WriteChannel(DIO_CH_LED1, DIO_HIGH);
+        Dio_WriteChannel(DIO_CH_LED_LOW,  DIO_HIGH);
+        Dio_WriteChannel(DIO_CH_LED3, DIO_HIGH);
+    }
+    else
+    {
+        Dio_WriteChannel(DIO_CH_LED_MID,  DIO_HIGH);
+        Dio_WriteChannel(DIO_CH_LED2, DIO_HIGH);
+        Dio_WriteChannel(DIO_CH_LED_GND,  DIO_HIGH);
+        Dio_WriteChannel(DIO_CH_LED4, DIO_HIGH);
+    }
+    toggle ^= 1u;
+}
 
 /* ================================================================== */
 /* EcuTask_Init                                                         */
@@ -168,7 +228,15 @@ void EcuTask_5ms(void)
     /* Toggle de presenca da tarefa - visivel via XCP/INCA */
     dbg_Task5ms_toggle ^= 1u;
 
-    /* LD4 desabilitado temporariamente para debug CAN */
+    /* LED4: espelha estado do sensor de fase do comando de valvulas */
+    if (Dio_ReadChannel(DIO_CH_PHASE_STATE) != 0u)
+    {
+        Dio_WriteChannel(DIO_CH_LED4, DIO_HIGH);
+    }
+    else
+    {
+        Dio_WriteChannel(DIO_CH_LED4, DIO_LOW);
+    }
 }
 
 /* ================================================================== */
@@ -213,47 +281,22 @@ void EcuTask_100ms(void)
     dbg_Task100ms_toggle ^= 1u;
 
     /* -------------------------------------------------------------- */
-    /* Exibe status CAN nos LEDs de debug                              */
+    /* Animacao dos LEDs quando motor parado (RPM = 0)                 */
     /*                                                                  */
-    /* Convencao de exibicao:                                           */
-    /*   LED4 aceso                  = CAN OK (status 0)               */
-    /*   LED4 + LED3                 = Error Warning (status 1)        */
-    /*   LED4 + LED3 + LED2          = Error Passive (TEC > 127)       */
-    /*   LED4 + LED3 + LED2 + LED1   = Bus-Off (status 3)             */
-    /*   Todos apagados              = codigo nao chegou aqui           */
+    /*   Chave OFF (IGNITION_ON = 0): Bounce Knight Rider              */
+    /*   Chave ON  (IGNITION_ON = 1): Pares alternados                 */
+    /*   Motor rodando: LEDs controlados pelos CDDs (injecao/ignicao)  */
     /* -------------------------------------------------------------- */
-
-    /* Apaga todos os LEDs de debug antes de atualizar */
-    Dio_WriteChannel(DIO_CH_LED1, DIO_LOW);
-    Dio_WriteChannel(DIO_CH_LED2, DIO_LOW);
-    Dio_WriteChannel(DIO_CH_LED3, DIO_LOW);
-    Dio_WriteChannel(DIO_CH_LED4, DIO_LOW);
-
-    if (dbg_CAN_Status == 3u)
+    if (CDD_Get_EngineSpeed_RAW() == 0u)
     {
-        /* Bus-Off: todos os 4 LEDs */
-        Dio_WriteChannel(DIO_CH_LED4, DIO_HIGH);
-        Dio_WriteChannel(DIO_CH_LED3, DIO_HIGH);
-        Dio_WriteChannel(DIO_CH_LED2, DIO_HIGH);
-        Dio_WriteChannel(DIO_CH_LED1, DIO_HIGH);
-    }
-    else if (dbg_CAN_TxErrCnt > 127u)
-    {
-        /* Error Passive: LED4 + LED3 + LED2 */
-        Dio_WriteChannel(DIO_CH_LED4, DIO_HIGH);
-        Dio_WriteChannel(DIO_CH_LED3, DIO_HIGH);
-        Dio_WriteChannel(DIO_CH_LED2, DIO_HIGH);
-    }
-    else if (dbg_CAN_Status == 1u)
-    {
-        /* Error Warning: LED4 + LED3 */
-        Dio_WriteChannel(DIO_CH_LED4, DIO_HIGH);
-        Dio_WriteChannel(DIO_CH_LED3, DIO_HIGH);
-    }
-    else
-    {
-        /* CAN OK: somente LED4 */
-        Dio_WriteChannel(DIO_CH_LED4, DIO_HIGH);
+        if (Dio_ReadChannel(DIO_CH_IGNITION_ON) != 0u)
+        {
+            Anim_AlternatePairs_Step();
+        }
+        else
+        {
+            Anim_Bounce_Step();
+        }
     }
 
     /* -------------------------------------------------------------- */

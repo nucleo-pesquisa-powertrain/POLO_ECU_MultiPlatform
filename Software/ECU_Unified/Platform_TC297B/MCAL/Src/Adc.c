@@ -26,17 +26,20 @@
 #include "IfxVadc.h"
 #include "IfxVadc_Adc.h"
 
+/* BSP - VADC Background Scan init */
+#include "ADC_Background_Scan.h"
+
 /*
  * Declaracao externa das variaveis de canal do modulo ADC_Background_Scan.
  * Estas variaveis sao definidas e inicializadas no BSP do projeto
  * (tipicamente em ADC_Background_Scan.c / Cpu0_Main.c).
  */
-extern IfxVadc_Adc_Channel g_vadcChannel0;  /* Grupo 0: AN0..AN7  */
-extern IfxVadc_Adc_Channel g_vadcChannel1;  /* Grupo 1: AN8..AN15 */
-extern IfxVadc_Adc_Channel g_vadcChannel2;  /* Grupo 2: AN16..AN23 */
-extern IfxVadc_Adc_Channel g_vadcChannel3;  /* Grupo 3: AN24..AN31 */
-extern IfxVadc_Adc_Channel g_vadcChannel4;  /* Grupo 4: AN32..AN39 */
-extern IfxVadc_Adc_Channel g_vadcChannel5;  /* Grupo 5: AN40..AN47 */
+extern IfxVadc_Adc_Channel g_vadcChannel0[8];  /* Grupo 0: AN0..AN7  */
+extern IfxVadc_Adc_Channel g_vadcChannel1[8];  /* Grupo 1: AN8..AN15 */
+extern IfxVadc_Adc_Channel g_vadcChannel2[8];  /* Grupo 2: AN16..AN23 */
+extern IfxVadc_Adc_Channel g_vadcChannel3[8];  /* Grupo 3: AN24..AN31 */
+extern IfxVadc_Adc_Channel g_vadcChannel4[8];  /* Grupo 4: AN32..AN39 */
+extern IfxVadc_Adc_Channel g_vadcChannel5[8];  /* Grupo 5: AN40..AN47 */
 
 /* ------------------------------------------------------------------ */
 /* Tabela de mapeamento: canal logico -> canal fisico VADC             */
@@ -84,13 +87,8 @@ const Adc_ChannelMapEntry Adc_ChannelMap[ADC_NUM_CHANNELS] =
  */
 void Adc_Init(void)
 {
-    /*
-     * O Background Scan do VADC e' inicializado em ADC_Background_Scan_Init()
-     * chamada no Cpu0_Main.c antes desta funcao.
-     * Nao ha parametros adicionais a configurar nesta camada.
-     * Esta funcao existe para satisfazer o contrato da API MCAL e
-     * permitir eventuais verificacoes de sanidade no futuro.
-     */
+    /* Inicializa o VADC Background Scan (modulo, grupos, canais) */
+    initADC();
 }
 
 /**
@@ -118,7 +116,7 @@ uint16 Adc_ReadChannel_Raw(Adc_ChannelType ch)
      * Ela retorna Ifx_VADC_RES com o campo .B.RESULT contendo o valor
      * de 12 bits (bits 11:0) quando a conversao estiver valida (VF=1).
      */
-    result = IfxVadc_Adc_getResult(Adc_ChannelMap[ch].groupChannel);
+    result = IfxVadc_Adc_getResult(&Adc_ChannelMap[ch].groupChannel[Adc_ChannelMap[ch].channelId]);
 
     /* Verificar bit de validade (Valid Flag) antes de retornar */
     if (result.B.VF == 0u)

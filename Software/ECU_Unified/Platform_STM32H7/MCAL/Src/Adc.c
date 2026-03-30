@@ -98,25 +98,26 @@ void Adc_Init(void)
 {
     if (Adc_Initialized != 0U)
     {
-        return; /* Ja inicializado - evita restart do DMA */
+        return;
     }
 
-    /* Zera os buffers para evitar leituras espurias antes da primeira conversao */
+    /* Zera os buffers */
     for (uint8_t i = 0U; i < ADC1_DMA_BUFFER_SIZE; i++) { Adc_DmaBuffer_ADC1[i] = 0U; }
     for (uint8_t i = 0U; i < ADC2_DMA_BUFFER_SIZE; i++) { Adc_DmaBuffer_ADC2[i] = 0U; }
     for (uint8_t i = 0U; i < ADC3_DMA_BUFFER_SIZE; i++) { Adc_DmaBuffer_ADC3[i] = 0U; }
 
-    /* Calibracao de offset do ADC (recomendada pelo RM do STM32H7).
-     * Single-ended, sem offset. Executar com ADC parado. */
-    HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
-    HAL_ADCEx_Calibration_Start(&hadc2, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
-    HAL_ADCEx_Calibration_Start(&hadc3, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
-
-    /* Inicia conversao continua com DMA para cada instancia ADC.
-     * A partir deste ponto, os buffers sao atualizados continuamente. */
-    (void)Adc_StartDMA(&hadc1, Adc_DmaBuffer_ADC1, ADC1_DMA_BUFFER_SIZE);
-    (void)Adc_StartDMA(&hadc2, Adc_DmaBuffer_ADC2, ADC2_DMA_BUFFER_SIZE);
-    (void)Adc_StartDMA(&hadc3, Adc_DmaBuffer_ADC3, ADC3_DMA_BUFFER_SIZE);
+    /*
+     * NOTA: O CubeMX configurou os ADCs em modo single-shot sem DMA.
+     * A calibracao e o Start_DMA foram desabilitados temporariamente.
+     * A leitura sera feita por polling em Adc_ReadChannel_Raw().
+     *
+     * TODO: Reconfigurar os ADCs no CubeMX com:
+     *   - ContinuousConvMode = ENABLE
+     *   - ConversionDataManagement = ADC_CONVERSIONDATA_DMA_CIRCULAR
+     *   - Resolution = ADC_RESOLUTION_12B
+     *   - Configurar DMA streams para cada ADC
+     * Depois reabilitar calibracao + Adc_StartDMA() aqui.
+     */
 
     Adc_Initialized = 1U;
 }

@@ -56,6 +56,7 @@
 /* Handler CAN/XCP (polling de baixa latencia)                          */
 /* ------------------------------------------------------------------ */
 #include "xcp_can_if.h"
+#include "stm32h7xx_hal.h"
 
 /* ------------------------------------------------------------------ */
 /* Animacoes de LED (igual TC297B)                                      */
@@ -152,6 +153,20 @@ static void Anim_AlternatePairs_Step(void)
 #define PRIORITY_20MS       2u
 #define PRIORITY_100MS      1u
 #define PRIORITY_BG         0u
+
+/* ================================================================== */
+/* Task de inicializacao (roda uma vez, depois se deleta)               */
+/* Garante que EcuTask_Init() roda com SysTick funcional               */
+/* ================================================================== */
+static void Task_Init(void *pvParameters)
+{
+    (void)pvParameters;
+
+    EcuTask_Init();
+
+    /* Inicializacao completa - deleta esta tarefa */
+    vTaskDelete(NULL);
+}
 
 /* ================================================================== */
 /* Wrappers FreeRTOS das tarefas periodicas                            */
@@ -278,11 +293,31 @@ void EcuTask_Hook_DisplayUpdate(void)
 /* Chamado pelo main.c do CubeMX apos todos os MX_*_Init().            */
 /* Esta funcao NAO retorna (vTaskStartScheduler e bloqueante).          */
 /* ================================================================== */
+/**
+ * FreeRTOS tick hook: chamado a cada tick do scheduler (1 ms).
+ * Incrementa o contador HAL para que HAL_GetTick() funcione
+ * corretamente com timeouts de SPI, I2C, etc.
+ */
+void vApplicationTickHook(void)
+{
+    HAL_IncTick();
+}
+
 void ECU_Main(void)
 {
-    EcuTask_Init();
+    /* Cria task de init + tarefas periodicas e a de background.
+     * EcuTask_Init() e chamada dentro da Task_Init para garantir que
+     * o SysTick (HAL_GetTick) esteja funcional via vApplicationTickHook.
+     * Sem o tick, funcoes HAL com timeout (SPI, ADC) travam. */
 
-    /* Cria todas as tarefas periodicas e a de background */
+    /* Task de init: prioridade maxima para rodar primeiro e se deletar */
+    xTaskCreate(Task_Init,
+                "Init",
+                STACK_10MS_WORDS,
+                NULL,
+                configMAX_PRIORITIES - 1,
+                NULL);
+
     xTaskCreate(Task_5ms,
                 "T5ms",
                 STACK_5MS_WORDS,
