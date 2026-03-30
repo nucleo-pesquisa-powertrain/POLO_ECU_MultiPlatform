@@ -61,56 +61,49 @@
 /* Animacoes de LED (igual TC297B)                                      */
 /* ------------------------------------------------------------------ */
 
-/** LEDs da placa STM32 */
-static GPIO_TypeDef* const ledPorts[4] = { DO_LED1_GPIO_Port, DO_LED2_GPIO_Port, LD3_GPIO_Port, DO_LED4_GPIO_Port };
-static const uint16_t      ledPins[4]  = { DO_LED1_Pin,       DO_LED2_Pin,       LD3_Pin,       DO_LED4_Pin };
-
-static void LEDs_AllOff(void)
-{
-    int i;
-    for (i = 0; i < 4; i++)
-        HAL_GPIO_WritePin(ledPorts[i], ledPins[i], GPIO_PIN_RESET);
-}
+/* LED2 tem logica invertida no hardware */
+#define LED1_ON()   HAL_GPIO_WritePin(DO_LED1_GPIO_Port, DO_LED1_Pin, GPIO_PIN_SET)
+#define LED1_OFF()  HAL_GPIO_WritePin(DO_LED1_GPIO_Port, DO_LED1_Pin, GPIO_PIN_RESET)
+#define LED2_ON()   HAL_GPIO_WritePin(DO_LED2_GPIO_Port, DO_LED2_Pin, GPIO_PIN_RESET)
+#define LED2_OFF()  HAL_GPIO_WritePin(DO_LED2_GPIO_Port, DO_LED2_Pin, GPIO_PIN_SET)
+#define LED4_ON()   HAL_GPIO_WritePin(DO_LED4_GPIO_Port, DO_LED4_Pin, GPIO_PIN_SET)
+#define LED4_OFF()  HAL_GPIO_WritePin(DO_LED4_GPIO_Port, DO_LED4_Pin, GPIO_PIN_RESET)
 
 /**
- * Bounce/Knight Rider: 1->2->3->4->3->2
+ * Bounce/Knight Rider: LED1 -> LED2 -> LED4 -> LED2
  * Chamada a cada 100ms quando chave OFF
  */
 static void Anim_Bounce_Step(void)
 {
     static uint8_t step = 0;
 
-    LEDs_AllOff();
+    switch (step)
+    {
+        case 0: LED1_ON();  LED2_OFF(); LED4_OFF(); break;
+        case 1: LED1_OFF(); LED2_ON();  LED4_OFF(); break;
+        case 2: LED1_OFF(); LED2_OFF(); LED4_ON();  break;
+        case 3: LED1_OFF(); LED2_ON();  LED4_OFF(); break;
+        default: step = 0; return;
+    }
 
-    if (step < 4)
-        HAL_GPIO_WritePin(ledPorts[step], ledPins[step], GPIO_PIN_SET);
-    else if (step == 4)
-        HAL_GPIO_WritePin(ledPorts[2], ledPins[2], GPIO_PIN_SET);
-    else if (step == 5)
-        HAL_GPIO_WritePin(ledPorts[1], ledPins[1], GPIO_PIN_SET);
-
-    step = (step >= 5) ? 0 : (step + 1);
+    step = (step >= 3) ? 0 : (step + 1);
 }
 
 /**
- * Pares alternados: 1+3 <-> 2+4
+ * Pares alternados: LED1+LED4 <-> LED2
  * Chamada a cada 100ms quando chave ON sem motor
  */
 static void Anim_AlternatePairs_Step(void)
 {
     static uint8_t toggle = 0;
 
-    LEDs_AllOff();
-
     if (toggle)
     {
-        HAL_GPIO_WritePin(ledPorts[0], ledPins[0], GPIO_PIN_SET);
-        HAL_GPIO_WritePin(ledPorts[2], ledPins[2], GPIO_PIN_SET);
+        LED1_ON();  LED2_OFF(); LED4_ON();
     }
     else
     {
-        HAL_GPIO_WritePin(ledPorts[1], ledPins[1], GPIO_PIN_SET);
-        HAL_GPIO_WritePin(ledPorts[3], ledPins[3], GPIO_PIN_SET);
+        LED1_OFF(); LED2_ON();  LED4_OFF();
     }
 
     toggle ^= 1;
@@ -179,6 +172,7 @@ static void Task_5ms(void *pvParameters)
 
     for (;;)
     {
+        
         EcuTask_5ms();
         vTaskDelay(pdMS_TO_TICKS(5u));
     }
@@ -194,6 +188,7 @@ static void Task_10ms(void *pvParameters)
 
     for (;;)
     {
+        
         EcuTask_10ms();
         vTaskDelay(pdMS_TO_TICKS(10u));
     }
@@ -208,6 +203,7 @@ static void Task_20ms(void *pvParameters)
 
     for (;;)
     {
+        
         EcuTask_20ms();
         vTaskDelay(pdMS_TO_TICKS(20u));
     }
@@ -243,10 +239,9 @@ static void Task_Background(void *pvParameters)
 
     for (;;)
     {
+        
         EcuTask_Background();
         XcpCanIf_Handler();
-
-        /* Cede para tarefas de maior prioridade sem bloquear */
         taskYIELD();
     }
 }
@@ -267,11 +262,14 @@ void EcuTask_Hook_DisplayUpdate(void)
     if (CDD_Get_EngineSpeed_RAW() == 0)
     {
         if (Dio_ReadChannel(DIO_CH_IGNITION_ON))
-            Anim_AlternatePairs_Step();
+            Anim_AlternatePairs_Step();  /* Chave ON, sem motor */
         else
-            Anim_Bounce_Step();
+            Anim_Bounce_Step();          /* Chave OFF */
     }
-    /* Com RPM > 0, os LEDs sao controlados pelo cdd_spark/cdd_injectors */
+    else
+    {
+        /* Motor rodando: LEDs controlados pelo CDD (injecao/ignicao) */
+    }
 }
 
 /* ================================================================== */
@@ -282,7 +280,6 @@ void EcuTask_Hook_DisplayUpdate(void)
 /* ================================================================== */
 void ECU_Main(void)
 {
-    /* Inicializa MCAL, CDDs, XCP e callbacks - deve ser antes das tasks */
     EcuTask_Init();
 
     /* Cria todas as tarefas periodicas e a de background */

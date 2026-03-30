@@ -8,15 +8,13 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-/* LEDs da Nucleo-H755ZI-Q (nao definidos no CubeMX) */
-#ifndef LD1_Pin
-#define LD1_Pin   GPIO_PIN_0
-#define LD1_GPIO_Port GPIOB
-#endif
-#ifndef LD2_Pin
-#define LD2_Pin   GPIO_PIN_1
-#define LD2_GPIO_Port GPIOE
-#endif
+/* LED2 tem logica invertida no hardware (SET=apaga, RESET=acende) */
+#define LED2_ON()   HAL_GPIO_WritePin(DO_LED2_GPIO_Port, DO_LED2_Pin, GPIO_PIN_RESET)
+#define LED2_OFF()  HAL_GPIO_WritePin(DO_LED2_GPIO_Port, DO_LED2_Pin, GPIO_PIN_SET)
+#define LED1_ON()   HAL_GPIO_WritePin(DO_LED1_GPIO_Port, DO_LED1_Pin, GPIO_PIN_SET)
+#define LED1_OFF()  HAL_GPIO_WritePin(DO_LED1_GPIO_Port, DO_LED1_Pin, GPIO_PIN_RESET)
+#define LED4_ON()   HAL_GPIO_WritePin(DO_LED4_GPIO_Port, DO_LED4_Pin, GPIO_PIN_SET)
+#define LED4_OFF()  HAL_GPIO_WritePin(DO_LED4_GPIO_Port, DO_LED4_Pin, GPIO_PIN_RESET)
 
 /* Declaracoes CubeMX (geradas pelo .ioc) */
 extern void MX_GPIO_Init(void);
@@ -106,42 +104,32 @@ int main(void)
     MX_TIM7_Init();
     MX_USART3_UART_Init();
 
-    /* ---- Animacao de startup Knight Rider (4 LEDs) ---- */
+    /* LED2 (PD11) tem logica invertida: SET=apaga, RESET=acende */
+
+    /* ---- Animacao de startup Knight Rider (3 LEDs) ---- */
     {
-        int i, j;
+        int i;
         volatile uint32_t d;
-        #define DELAY_MS(ms) for (d = 0; d < ((ms) * 3000UL); d++) { __NOP(); }
+        #define DELAY_MS(ms) for (d = 0; d < ((ms) * 30000UL); d++) { __NOP(); }
 
-        GPIO_TypeDef* ledPorts[] = { DO_LED1_GPIO_Port, DO_LED2_GPIO_Port, LD3_GPIO_Port, DO_LED4_GPIO_Port };
-        uint16_t      ledPins[]  = { DO_LED1_Pin,       DO_LED2_Pin,       LD3_Pin,       DO_LED4_Pin };
+        /* Apaga todos primeiro */
+        LED1_OFF(); LED2_OFF(); LED4_OFF();
 
-        /* 2 varridas ida e volta: 1->2->3->4->3->2 */
+        /* 2 varridas: LED1 -> LED2 -> LED4 -> LED2 */
         for (i = 0; i < 2; i++)
         {
-            /* Ida: 0 -> 3 */
-            for (j = 0; j < 4; j++)
-            {
-                HAL_GPIO_WritePin(ledPorts[j], ledPins[j], GPIO_PIN_SET);
-                DELAY_MS(80);
-                HAL_GPIO_WritePin(ledPorts[j], ledPins[j], GPIO_PIN_RESET);
-            }
-            /* Volta: 2 -> 1 */
-            for (j = 2; j >= 1; j--)
-            {
-                HAL_GPIO_WritePin(ledPorts[j], ledPins[j], GPIO_PIN_SET);
-                DELAY_MS(80);
-                HAL_GPIO_WritePin(ledPorts[j], ledPins[j], GPIO_PIN_RESET);
-            }
+            LED1_ON();  DELAY_MS(100); LED1_OFF();
+            LED2_ON();  DELAY_MS(100); LED2_OFF();
+            LED4_ON();  DELAY_MS(100); LED4_OFF();
+            LED2_ON();  DELAY_MS(100); LED2_OFF();
         }
 
-        /* Flash final: todos acendem juntos */
-        for (j = 0; j < 4; j++)
-            HAL_GPIO_WritePin(ledPorts[j], ledPins[j], GPIO_PIN_SET);
-        DELAY_MS(300);
+        /* Flash final: todos acesos */
+        LED1_ON(); LED2_ON(); LED4_ON();
+        DELAY_MS(400);
 
         /* Apaga tudo */
-        for (j = 0; j < 4; j++)
-            HAL_GPIO_WritePin(ledPorts[j], ledPins[j], GPIO_PIN_RESET);
+        LED1_OFF(); LED2_OFF(); LED4_OFF();
         DELAY_MS(150);
 
         #undef DELAY_MS
