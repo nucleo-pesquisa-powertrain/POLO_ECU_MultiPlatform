@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.tcf.debug.LaunchConfigurationType">
+    <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+        <listEntry value="/ECU_TC297B_POLO"/>
+    </listAttribute>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+        <listEntry value="4"/>
+    </listAttribute>
+    <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
+        <listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
+    </listAttribute>
+    <booleanAttribute key="org.eclipse.tcf.debug.AttachChildren" value="true"/>
+    <intAttribute key="org.eclipse.tcf.debug.BuildBeforeLaunch" value="0"/>
+    <booleanAttribute key="org.eclipse.tcf.debug.DisconnectOnCtxExit" value="true"/>
+    <stringAttribute key="org.eclipse.tcf.debug.LocalProgramFile" value="C:\Users\u28m43\Desktop\Scripts\Infineon_AURIX_TC297B\Infineon_AURIX_TC297B\AURIX\ECU_TRICORE_TC297B_POLO\TriCore Debug (TASKING)\ECU_TRICORE_TC297B_POLO.elf"/>
+    <stringAttribute key="org.eclipse.tcf.debug.ProgramFile" value=""/>
+    <stringAttribute key="org.eclipse.tcf.debug.ProjectBuildConfigID" value="com.infineon.aurix.buildsystem.managed.configuration.binary.100000001"/>
+    <stringAttribute key="org.eclipse.tcf.debug.ProjectName" value="ECU_TC297B_POLO"/>
+    <booleanAttribute key="org.eclipse.tcf.debug.RunLocalAgent" value="false"/>
+    <booleanAttribute key="org.eclipse.tcf.debug.RunLocalServer" value="false"/>
+    <booleanAttribute key="org.eclipse.tcf.debug.StopAtEntry" value="true"/>
+    <booleanAttribute key="org.eclipse.tcf.debug.StopAtMain" value="true"/>
+    <booleanAttribute key="org.eclipse.tcf.debug.UseLocalAgent" value="true"/>
+    <booleanAttribute key="org.eclipse.tcf.debug.UseTerminal" value="true"/>
+</launchConfiguration>

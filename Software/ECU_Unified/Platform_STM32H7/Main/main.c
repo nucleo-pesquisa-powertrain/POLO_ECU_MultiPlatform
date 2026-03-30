@@ -8,6 +8,16 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+/* LEDs da Nucleo-H755ZI-Q (nao definidos no CubeMX) */
+#ifndef LD1_Pin
+#define LD1_Pin   GPIO_PIN_0
+#define LD1_GPIO_Port GPIOB
+#endif
+#ifndef LD2_Pin
+#define LD2_Pin   GPIO_PIN_1
+#define LD2_GPIO_Port GPIOE
+#endif
+
 /* Declaracoes CubeMX (geradas pelo .ioc) */
 extern void MX_GPIO_Init(void);
 extern void MX_ADC1_Init(void);
@@ -95,6 +105,47 @@ int main(void)
     MX_TIM15_Init();
     MX_TIM7_Init();
     MX_USART3_UART_Init();
+
+    /* ---- Animacao de startup Knight Rider (4 LEDs) ---- */
+    {
+        int i, j;
+        volatile uint32_t d;
+        #define DELAY_MS(ms) for (d = 0; d < ((ms) * 3000UL); d++) { __NOP(); }
+
+        GPIO_TypeDef* ledPorts[] = { DO_LED1_GPIO_Port, DO_LED2_GPIO_Port, LD3_GPIO_Port, DO_LED4_GPIO_Port };
+        uint16_t      ledPins[]  = { DO_LED1_Pin,       DO_LED2_Pin,       LD3_Pin,       DO_LED4_Pin };
+
+        /* 2 varridas ida e volta: 1->2->3->4->3->2 */
+        for (i = 0; i < 2; i++)
+        {
+            /* Ida: 0 -> 3 */
+            for (j = 0; j < 4; j++)
+            {
+                HAL_GPIO_WritePin(ledPorts[j], ledPins[j], GPIO_PIN_SET);
+                DELAY_MS(80);
+                HAL_GPIO_WritePin(ledPorts[j], ledPins[j], GPIO_PIN_RESET);
+            }
+            /* Volta: 2 -> 1 */
+            for (j = 2; j >= 1; j--)
+            {
+                HAL_GPIO_WritePin(ledPorts[j], ledPins[j], GPIO_PIN_SET);
+                DELAY_MS(80);
+                HAL_GPIO_WritePin(ledPorts[j], ledPins[j], GPIO_PIN_RESET);
+            }
+        }
+
+        /* Flash final: todos acendem juntos */
+        for (j = 0; j < 4; j++)
+            HAL_GPIO_WritePin(ledPorts[j], ledPins[j], GPIO_PIN_SET);
+        DELAY_MS(300);
+
+        /* Apaga tudo */
+        for (j = 0; j < 4; j++)
+            HAL_GPIO_WritePin(ledPorts[j], ledPins[j], GPIO_PIN_RESET);
+        DELAY_MS(150);
+
+        #undef DELAY_MS
+    }
 
     /* Inicia o software da ECU (EcuTask_Init + FreeRTOS scheduler) */
     ECU_Main();

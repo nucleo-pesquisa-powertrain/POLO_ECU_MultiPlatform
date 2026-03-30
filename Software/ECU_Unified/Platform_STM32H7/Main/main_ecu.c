@@ -48,11 +48,73 @@
 /* Tarefas unificadas da ECU                                            */
 /* ------------------------------------------------------------------ */
 #include "ecu_tasks.h"
+#include "main.h"
+#include "Dio.h"
+#include "cdd_crankshaft.h"
 
 /* ------------------------------------------------------------------ */
 /* Handler CAN/XCP (polling de baixa latencia)                          */
 /* ------------------------------------------------------------------ */
 #include "xcp_can_if.h"
+
+/* ------------------------------------------------------------------ */
+/* Animacoes de LED (igual TC297B)                                      */
+/* ------------------------------------------------------------------ */
+
+/** LEDs da placa STM32 */
+static GPIO_TypeDef* const ledPorts[4] = { DO_LED1_GPIO_Port, DO_LED2_GPIO_Port, LD3_GPIO_Port, DO_LED4_GPIO_Port };
+static const uint16_t      ledPins[4]  = { DO_LED1_Pin,       DO_LED2_Pin,       LD3_Pin,       DO_LED4_Pin };
+
+static void LEDs_AllOff(void)
+{
+    int i;
+    for (i = 0; i < 4; i++)
+        HAL_GPIO_WritePin(ledPorts[i], ledPins[i], GPIO_PIN_RESET);
+}
+
+/**
+ * Bounce/Knight Rider: 1->2->3->4->3->2
+ * Chamada a cada 100ms quando chave OFF
+ */
+static void Anim_Bounce_Step(void)
+{
+    static uint8_t step = 0;
+
+    LEDs_AllOff();
+
+    if (step < 4)
+        HAL_GPIO_WritePin(ledPorts[step], ledPins[step], GPIO_PIN_SET);
+    else if (step == 4)
+        HAL_GPIO_WritePin(ledPorts[2], ledPins[2], GPIO_PIN_SET);
+    else if (step == 5)
+        HAL_GPIO_WritePin(ledPorts[1], ledPins[1], GPIO_PIN_SET);
+
+    step = (step >= 5) ? 0 : (step + 1);
+}
+
+/**
+ * Pares alternados: 1+3 <-> 2+4
+ * Chamada a cada 100ms quando chave ON sem motor
+ */
+static void Anim_AlternatePairs_Step(void)
+{
+    static uint8_t toggle = 0;
+
+    LEDs_AllOff();
+
+    if (toggle)
+    {
+        HAL_GPIO_WritePin(ledPorts[0], ledPins[0], GPIO_PIN_SET);
+        HAL_GPIO_WritePin(ledPorts[2], ledPins[2], GPIO_PIN_SET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(ledPorts[1], ledPins[1], GPIO_PIN_SET);
+        HAL_GPIO_WritePin(ledPorts[3], ledPins[3], GPIO_PIN_SET);
+    }
+
+    toggle ^= 1;
+}
 
 /* ================================================================== */
 /* Tamanhos de pilha das tarefas FreeRTOS (em palavras de 32 bits)     */
@@ -187,6 +249,29 @@ static void Task_Background(void *pvParameters)
         /* Cede para tarefas de maior prioridade sem bloquear */
         taskYIELD();
     }
+}
+
+/* ================================================================== */
+/* Hook de display - animacoes de LED baseadas no estado do motor       */
+/*                                                                      */
+/* Sobrescreve a versao fraca em ecu_tasks.c.                           */
+/* Chamada por EcuTask_100ms() a cada 100 ms.                           */
+/*                                                                      */
+/* Estados:                                                              */
+/*   RPM == 0, chave OFF  -> Bounce (Knight Rider)                      */
+/*   RPM == 0, chave ON   -> Pares alternados (1+3 <-> 2+4)            */
+/*   RPM > 0              -> LEDs controlados pelo CDD (inj/spark)      */
+/* ================================================================== */
+void EcuTask_Hook_DisplayUpdate(void)
+{
+    if (CDD_Get_EngineSpeed_RAW() == 0)
+    {
+        if (Dio_ReadChannel(DIO_CH_IGNITION_ON))
+            Anim_AlternatePairs_Step();
+        else
+            Anim_Bounce_Step();
+    }
+    /* Com RPM > 0, os LEDs sao controlados pelo cdd_spark/cdd_injectors */
 }
 
 /* ================================================================== */
