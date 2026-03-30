@@ -32,7 +32,7 @@
  */
 
 #include "rte_components.h"
-#include "Adc.h"
+#include "Mcal_Adc.h"
 #include "Platform_Types.h"
 #include "spark_interface.h"
 #include "fuel_interface.h"

@@ -15,6 +15,7 @@
 
 #elif defined(PLATFORM_STM32H7)
     /* ARM Cortex-M CMSIS intrinsics */
+    #include "cmsis_gcc.h"
     #define Mcal_DisableAllInterrupts()   __disable_irq()
     #define Mcal_EnableAllInterrupts()    __enable_irq()
 

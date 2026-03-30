@@ -38,7 +38,7 @@
 #include "cdd_injectors.h"
 #include "Gpt.h"
 #include "Dio.h"
-#include "Spi.h"
+#include "Mcal_Spi.h"
 #include "Platform_Types.h"
 
 /* ------------------------------------------------------------------ */

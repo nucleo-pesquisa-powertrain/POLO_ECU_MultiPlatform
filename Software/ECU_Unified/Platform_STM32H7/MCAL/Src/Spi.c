@@ -36,7 +36,7 @@
  *             Verificar se o SPI escolhido conflita com pinos usados pelo DIO.
  */
 
-#include "Spi.h"
+#include "Mcal_Spi.h"
 #include "stm32h7xx_hal.h"
 
 /* ------------------------------------------------------------------ */

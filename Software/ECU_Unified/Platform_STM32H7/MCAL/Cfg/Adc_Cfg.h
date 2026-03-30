@@ -28,7 +28,7 @@
 #define ADC_CFG_H
 
 #include "stm32h7xx_hal.h"
-#include "Adc.h"
+#include "Mcal_Adc.h"
 
 /* ------------------------------------------------------------------ */
 /* Handles ADC (gerados pelo CubeMX em adc.c / main.c)              */

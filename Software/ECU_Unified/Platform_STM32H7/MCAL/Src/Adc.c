@@ -25,7 +25,7 @@
  *             gerados pelo CubeMX, para iniciar as conversoes DMA.
  */
 
-#include "Adc.h"
+#include "Mcal_Adc.h"
 #include "Adc_Cfg.h"
 #include "stm32h7xx_hal.h"
 

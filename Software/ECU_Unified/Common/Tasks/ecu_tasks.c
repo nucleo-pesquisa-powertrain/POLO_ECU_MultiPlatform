@@ -26,7 +26,7 @@
 /* MCAL AUTOSAR */
 #include "Platform_Types.h"
 #include "Dio.h"
-#include "Adc.h"
+#include "Mcal_Adc.h"
 #include "Icu.h"
 #include "Gpt.h"
 

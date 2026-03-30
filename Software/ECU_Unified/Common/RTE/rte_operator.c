@@ -25,7 +25,7 @@
  */
 
 #include "rte_operator.h"
-#include "Adc.h"
+#include "Mcal_Adc.h"
 #include "Platform_Types.h"
 
 /* ------------------------------------------------------------------ */

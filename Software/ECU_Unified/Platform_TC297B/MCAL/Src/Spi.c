@@ -3,7 +3,7 @@
  * \brief Implementacao MCAL SPI para TC297B - delega para SPI_CPU.c (HardwareAdp)
  */
 
-#include "Spi.h"
+#include "Mcal_Spi.h"
 #include "SPI_CPU.h"
 
 void Spi_Init(void)

@@ -175,7 +175,6 @@ void Can_Init(const Can_ConfigType* config)
     /* Configura parametros de bit timing do FDCAN1.
      * O CubeMX pode ter pre-configurado, mas sobrescrevemos aqui
      * para garantir os valores corretos independente do projeto. */
-    hfdcan1.Init.ClockDivider        = FDCAN_CLOCK_DIV1;
     hfdcan1.Init.FrameFormat         = FDCAN_FRAME_CLASSIC;
     hfdcan1.Init.Mode                = FDCAN_MODE_NORMAL;
     hfdcan1.Init.AutoRetransmission  = ENABLE;

@@ -59,15 +59,15 @@
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_ASW/ASCET/src}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_ASW/ASCET/include}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_Tasks}"/>
-									<listOptionValue builtIn="false" value="CubeMX/Inc"/>
-									<listOptionValue builtIn="false" value="MCAL/Cfg"/>
-									<listOptionValue builtIn="false" value="Drivers/STM32H7xx_HAL_Driver/Inc"/>
-									<listOptionValue builtIn="false" value="Drivers/CMSIS/Device/ST/STM32H7xx/Include"/>
-									<listOptionValue builtIn="false" value="Drivers/CMSIS/Include"/>
-									<listOptionValue builtIn="false" value="Middlewares/Third_Party/FreeRTOS/Source/include"/>
-									<listOptionValue builtIn="false" value="Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS"/>
-									<listOptionValue builtIn="false" value="Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1"/>
-									<listOptionValue builtIn="false" value="Main"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/CubeMX/Inc}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/MCAL/Cfg}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Drivers/STM32H7xx_HAL_Driver/Inc}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Drivers/CMSIS/Device/ST/STM32H7xx/Include}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Drivers/CMSIS/Include}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Middlewares/Third_Party/FreeRTOS/Source/include}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Main}"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1750000606" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -165,15 +165,15 @@
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_ASW/ASCET/src}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_ASW/ASCET/include}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_Tasks}"/>
-									<listOptionValue builtIn="false" value="CubeMX/Inc"/>
-									<listOptionValue builtIn="false" value="MCAL/Cfg"/>
-									<listOptionValue builtIn="false" value="Drivers/STM32H7xx_HAL_Driver/Inc"/>
-									<listOptionValue builtIn="false" value="Drivers/CMSIS/Device/ST/STM32H7xx/Include"/>
-									<listOptionValue builtIn="false" value="Drivers/CMSIS/Include"/>
-									<listOptionValue builtIn="false" value="Middlewares/Third_Party/FreeRTOS/Source/include"/>
-									<listOptionValue builtIn="false" value="Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS"/>
-									<listOptionValue builtIn="false" value="Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1"/>
-									<listOptionValue builtIn="false" value="Main"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/CubeMX/Inc}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/MCAL/Cfg}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Drivers/STM32H7xx_HAL_Driver/Inc}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Drivers/CMSIS/Device/ST/STM32H7xx/Include}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Drivers/CMSIS/Include}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Middlewares/Third_Party/FreeRTOS/Source/include}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Main}"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1750002606" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>

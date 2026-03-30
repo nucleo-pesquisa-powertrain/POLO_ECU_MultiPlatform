@@ -25,7 +25,7 @@
  */
 
 #include "rte_environment.h"
-#include "Adc.h"
+#include "Mcal_Adc.h"
 #include "Dio.h"
 #include "Platform_Types.h"
 #include "cdd_crankshaft.h"

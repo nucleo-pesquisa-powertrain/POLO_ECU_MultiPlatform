@@ -22,7 +22,7 @@
 
 /* MCAL API - substitui IfxPort, hal_discrete_outputs, hal_adc_inputs */
 #include "Dio.h"
-#include "Adc.h"
+#include "Mcal_Adc.h"
 
 /* MCAL API - substitui GPT12_Timer_Interrupt */
 #include "Gpt.h"
