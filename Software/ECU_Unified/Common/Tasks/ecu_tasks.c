@@ -30,6 +30,9 @@
 #include "Icu.h"
 #include "Gpt.h"
 
+/* Camada de abstracao de sensores */
+#include "EcuAbs_Sensors.h"
+
 /* Complex Device Drivers */
 #include "cdd_crankshaft.h"
 #include "cdd_synchronism.h"
@@ -168,6 +171,9 @@ void EcuTask_Init(void)
     Icu_Init();
     Gpt_Init();
 
+    /* Camada de abstracao de sensores (sobre MCAL Adc/Dio/CDD) */
+    EcuAbs_Init();
+
     /* -------------------------------------------------------------- */
     /* 2. Complex Device Drivers                                       */
     /* -------------------------------------------------------------- */
@@ -229,7 +235,7 @@ void EcuTask_5ms(void)
     dbg_Task5ms_toggle ^= 1u;
 
     /* LED4: espelha estado do sensor de fase do comando de valvulas */
-    if (Dio_ReadChannel(DIO_CH_PHASE_STATE) != 0u)
+    if (EcuAbs_GetPhaseState() != 0u)
     {
         Dio_WriteChannel(DIO_CH_LED4, DIO_HIGH);
     }
@@ -245,6 +251,9 @@ void EcuTask_5ms(void)
 
 void EcuTask_10ms(void)
 {
+    /* Atualiza leituras dos sensores via EcuAbs (antes do RTE/ASW) */
+    EcuAbs_Update();
+
     /* Logica de aplicacao ASCET: XCP, RTE, ECU_State, TBI, THROTTLE   */
     Task0_Run();
 
@@ -287,9 +296,9 @@ void EcuTask_100ms(void)
     /*   Chave ON  (IGNITION_ON = 1): Pares alternados                 */
     /*   Motor rodando: LEDs controlados pelos CDDs (injecao/ignicao)  */
     /* -------------------------------------------------------------- */
-    if (CDD_Get_EngineSpeed_RAW() == 0u)
+    if (EcuAbs_GetEngineSpeed_rpm() == 0u)
     {
-        if (Dio_ReadChannel(DIO_CH_IGNITION_ON) != 0u)
+        if (EcuAbs_GetIgnitionOn() != 0u)
         {
             Anim_AlternatePairs_Step();
         }

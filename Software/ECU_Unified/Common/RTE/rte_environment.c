@@ -9,12 +9,9 @@
  *   - Aplicar curvas de calibracao e limites de saturacao
  *   - Expor os sinais processados atraves da interface Get16s/Get16u/Get8u
  *
- * Dependencias MCAL (plataforma-independentes):
- *   - Adc.h  : Adc_ReadChannel_mV(), canais ADC_CH_*
- *   - Dio.h  : Dio_ReadChannel(), canais DIO_CH_*
- *
- * Dependencias de aplicacao:
- *   - cdd_crankshaft.h     : CDD_Get_EngineSpeed_RAW()
+ * Dependencias:
+ *   - EcuAbs_Sensors.h     : camada de abstracao de sensores (EcuAbs_Get*())
+ *   - Dio.h                : Dio_ReadChannel(), canais DIO_CH_*
  *   - ECU_State_interface.h: Get_ECU_State()
  *
  * Historico:
@@ -22,21 +19,15 @@
  *               (hal_adc_inputs.h, hal_discrete_inputs.h) pela MCAL API
  *               (Adc.h, Dio.h). Curvas de calibracao e formulas de conversao
  *               preservadas identicas ao original.
+ *   2026-03-30  Refatorado: Update_* delegam para EcuAbs_Sensors (camada
+ *               de abstracao). Curvas de calibracao movidas para EcuAbs.
  */
 
 #include "rte_environment.h"
-#include "Mcal_Adc.h"
+#include "EcuAbs_Sensors.h"
 #include "Dio.h"
 #include "Platform_Types.h"
-#include "cdd_crankshaft.h"
 #include "ECU_State_interface.h"
-
-/* ------------------------------------------------------------------ */
-/* Constantes internas                                                  */
-/* ------------------------------------------------------------------ */
-
-/** Fator de filtro passa-baixa para rotacao do motor (nao utilizado ativamente) */
-#define ENGINE_SPEED_FILTER_FACTOR      0.1f
 
 /* ------------------------------------------------------------------ */
 /* Prototipos das funcoes de atualizacao internas (privadas ao modulo) */
@@ -96,44 +87,13 @@ void Update_RTE_EnvironmentSignals(void)
 /* ------------------------------------------------------------------ */
 
 /**
- * \brief Le o canal ADC_CH_AIR_TEMP e aplica a curva quadratica de calibracao.
+ * \brief Obtem a temperatura do ar de admissao via EcuAbs [degC].
  *
- * Curva: T[degC] = 2.827*V^2 - 43.44*V + 135.1
- * Faixa valida: 0.4 V .. 4.9 V
- * Saturacao: -10 degC .. 129.75 degC
- *
- * Adc_ReadChannel_mV() retorna milivolts (uint32); a divisao por 1000.0f
- * converte para volts, identico ao comportamento anterior de HAL_ADC_Get_V_AirTemp().
+ * A curva de calibracao e saturacao sao aplicadas internamente pelo EcuAbs.
  */
 static void Update_RTE_AirTemperature(void)
 {
-    float32 L_RTE_T_AirTemp;
-    float32 voltage = ((float32) Adc_ReadChannel_mV(ADC_CH_AIR_TEMP)) / 1000.0f;
-
-    /* Deteccao de falha por faixa de tensao (a tratar com diagnostico futuro) */
-    if (voltage > 4.9f)
-    {
-        /* Tensao acima do esperado - possivel curto com 5V ou sensor aberto */
-    }
-    else if (voltage < 0.4f)
-    {
-        /* Tensao abaixo do esperado - possivel curto com GND ou sensor aberto */
-    }
-
-    /* Curva de calibracao quadratica (coeficientes fixos de calibracao de bancada) */
-    L_RTE_T_AirTemp = ((2.827f * voltage * voltage) - (43.44f * voltage) + 135.1f);
-
-    /* Saturacao dos limites fisicos do sensor */
-    if (L_RTE_T_AirTemp > 129.75f)
-    {
-        L_RTE_T_AirTemp = 129.75f;
-    }
-    else if (L_RTE_T_AirTemp < -10.0f)
-    {
-        L_RTE_T_AirTemp = -10.0f;
-    }
-
-    S_RTE_T_AirTemp = (short int) L_RTE_T_AirTemp;
+    S_RTE_T_AirTemp = EcuAbs_GetAirTemp_degC();
 }
 
 /**
@@ -160,44 +120,13 @@ short int Get16s_RTE_T_AirTemperature(void)
 /* ------------------------------------------------------------------ */
 
 /**
- * \brief Le o canal ADC_CH_COOLANT_TEMP e aplica a curva linear de calibracao.
+ * \brief Obtem a temperatura do liquido de arrefecimento via EcuAbs [degC].
  *
- * Curva: T[degC] = -32.24*V + 133.43
- * Faixa valida: 0.333 V .. 4.4 V
- * Saturacao: -5.25 degC .. 143.25 degC
- *
- * Adc_ReadChannel_mV() retorna milivolts; divisao por 1000.0f converte
- * para volts, identico ao comportamento anterior de HAL_ADC_Get_V_CoolantTemp().
+ * A curva de calibracao e saturacao sao aplicadas internamente pelo EcuAbs.
  */
 static void Update_RTE_CoolantTemperature(void)
 {
-    float32 L_RTE_T_CoolantTemp;
-    float32 voltage = ((float32) Adc_ReadChannel_mV(ADC_CH_COOLANT_TEMP)) / 1000.0f;
-
-    /* Deteccao de falha por faixa de tensao */
-    if (voltage > 4.4f)
-    {
-        /* Tensao acima do esperado */
-    }
-    else if (voltage < 0.333f)
-    {
-        /* Tensao abaixo do esperado */
-    }
-
-    /* Curva de calibracao linear */
-    L_RTE_T_CoolantTemp = ((voltage * -32.24f) + 133.43f);
-
-    /* Saturacao dos limites fisicos do sensor */
-    if (L_RTE_T_CoolantTemp > 143.25f)
-    {
-        L_RTE_T_CoolantTemp = 143.25f;
-    }
-    else if (L_RTE_T_CoolantTemp < -5.25f)
-    {
-        L_RTE_T_CoolantTemp = -5.25f;
-    }
-
-    S_RTE_T_CoolantTemp = (short int) L_RTE_T_CoolantTemp;
+    S_RTE_T_CoolantTemp = EcuAbs_GetCoolantTemp_degC();
 }
 
 /**
@@ -213,44 +142,13 @@ short int Get16s_RTE_T_CoolantTemperature(void)
 /* ------------------------------------------------------------------ */
 
 /**
- * \brief Le o canal ADC_CH_MAP e aplica a curva linear de calibracao.
+ * \brief Obtem a pressao do coletor de admissao via EcuAbs [kPa].
  *
- * Curva: P[kPa] = 25.16*V - 3.87
- * Faixa valida: 0.5 V .. 4.5 V
- * Saturacao: 8.72 kPa .. 121.96 kPa
- *
- * Adc_ReadChannel_mV() retorna milivolts; divisao por 1000.0f converte
- * para volts, identico ao comportamento anterior de HAL_ADC_Get_V_MAP().
+ * A curva de calibracao e saturacao sao aplicadas internamente pelo EcuAbs.
  */
 static void Update_RTE_ManAirPress(void)
 {
-    float32 L_RTE_P_MAP;
-    float32 voltage = ((float32) Adc_ReadChannel_mV(ADC_CH_MAP)) / 1000.0f;
-
-    /* Deteccao de falha por faixa de tensao */
-    if (voltage > 4.5f)
-    {
-        /* Tensao acima do esperado */
-    }
-    else if (voltage < 0.5f)
-    {
-        /* Tensao abaixo do esperado */
-    }
-
-    /* Curva de calibracao linear */
-    L_RTE_P_MAP = ((voltage * 25.16f) - 3.87f);
-
-    /* Saturacao dos limites fisicos do sensor */
-    if (L_RTE_P_MAP < 8.72f)
-    {
-        L_RTE_P_MAP = 8.72f;
-    }
-    else if (L_RTE_P_MAP > 121.96f)
-    {
-        L_RTE_P_MAP = 121.96f;
-    }
-
-    S_RTE_P_MAP = (unsigned short int) L_RTE_P_MAP;
+    S_RTE_P_MAP = EcuAbs_GetMAP_kPa();
 }
 
 /**
@@ -266,15 +164,13 @@ unsigned short int Get16u_RTE_P_ManAirPress(void)
 /* ------------------------------------------------------------------ */
 
 /**
- * \brief Atualiza o percentual de etanol no combustivel.
+ * \brief Obtem o percentual de etanol no combustivel via EcuAbs.
  *
- * Valor fixo de 275 (escala 0-1000, representa ~27.5%). A leitura do
- * sensor de etanol nao esta implementada nesta revisao.
+ * Escala 0-1000, onde 1000 = 100%.
  */
 static void Update_RTE_p_EthanolPercent(void)
 {
-    /* TODO: implementar leitura do sensor de etanol quando disponivel */
-    S_RTE_p_EthanolPercent = 275u;
+    S_RTE_p_EthanolPercent = EcuAbs_GetEthanolPercent();
 }
 
 /**
@@ -290,23 +186,11 @@ unsigned short int Get16u_RTE_p_EthanolPercent(void)
 /* ------------------------------------------------------------------ */
 
 /**
- * \brief Atualiza a rotacao do motor lida pelo CDD do virabrequim.
- *
- * A filtragem passa-baixa (ENGINE_SPEED_FILTER_FACTOR) esta comentada
- * intencionalmente: o valor raw e' utilizado diretamente para evitar
- * atraso na malha de controle.
+ * \brief Obtem a rotacao do motor via EcuAbs [RPM].
  */
 static void Update_RTE_rpm_EngineSpeed(void)
 {
-    static unsigned short int L_RTE_rpm_EngineSpeed_prev = 0u;
-    unsigned short int L_RTE_rpm_EngineSpeedFiltered;
-
-    /* Filtro desabilitado - usando valor RAW diretamente */
-    /* L_RTE_rpm_EngineSpeedFiltered = L_RTE_rpm_EngineSpeed_prev +
-       ((L_RTE_rpm_EngineSpeed_prev - CDD_Get_EngineSpeed_RAW()) * ENGINE_SPEED_FILTER_FACTOR); */
-    L_RTE_rpm_EngineSpeedFiltered = (unsigned short int) CDD_Get_EngineSpeed_RAW();
-    L_RTE_rpm_EngineSpeed_prev    = L_RTE_rpm_EngineSpeedFiltered;
-    S_RTE_rpm_EngineSpeed         = L_RTE_rpm_EngineSpeedFiltered;
+    S_RTE_rpm_EngineSpeed = EcuAbs_GetEngineSpeed_rpm();
 }
 
 /**
@@ -325,21 +209,13 @@ unsigned short int Get16u_RTE_rpm_EngineSpeeed(void)
 /* ------------------------------------------------------------------ */
 
 /**
- * \brief Le o canal ADC_CH_VBATT e aplica o fator de escala do divisor resistivo.
+ * \brief Obtem a tensao da bateria via EcuAbs [mV].
  *
- * O sinal de bateria e' atenuado por um divisor resistivo antes do ADC.
- * O fator (14.0 / 5.0) reconstroi a tensao original da bateria (0..14 V)
- * a partir da tensao no ADC (0..5 V), mantendo a unidade em mV.
- *
- * Adc_ReadChannel_mV() retorna milivolts (uint32), identico ao
- * comportamento anterior de HAL_ADC_Get_V_Vbatt().
+ * O fator do divisor resistivo e aplicado internamente pelo EcuAbs.
  */
 static void Update_RTE_V_BatteryCharge(void)
 {
-    unsigned short int voltage_mV = (unsigned short int) Adc_ReadChannel_mV(ADC_CH_VBATT);
-
-    /* Reconstroi a tensao da bateria aplicando o fator do divisor resistivo */
-    S_RTE_V_BatteryCharge = (unsigned short int)(((float32) voltage_mV) * (14.0f / 5.0f));
+    S_RTE_V_BatteryCharge = (unsigned short int)EcuAbs_GetVbatt_mV();
 }
 
 /**
