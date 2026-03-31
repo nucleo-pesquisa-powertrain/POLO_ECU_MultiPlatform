@@ -59,6 +59,7 @@
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_ASW/ASCET/src}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_ASW/ASCET/include}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_Tasks}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_EcuAbs}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/CubeMX/Inc}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/MCAL/Cfg}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Drivers/STM32H7xx_HAL_Driver/Inc}"/>
@@ -100,6 +101,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Common_XCP"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Common_ASW"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Common_Tasks"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Common_EcuAbs"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="MCAL/Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="CubeMX/Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Main"/>
@@ -165,6 +167,7 @@
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_ASW/ASCET/src}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_ASW/ASCET/include}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_Tasks}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Common_EcuAbs}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/CubeMX/Inc}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/MCAL/Cfg}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Drivers/STM32H7xx_HAL_Driver/Inc}"/>
@@ -206,6 +209,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Common_XCP"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Common_ASW"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Common_Tasks"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Common_EcuAbs"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="MCAL/Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="CubeMX/Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Main"/>
